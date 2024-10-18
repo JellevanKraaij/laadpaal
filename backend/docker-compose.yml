@@ -1,0 +1,23 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules/
+    restart: on-failure
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    restart: on-failure
+  dbeaver:
+    image: dbeaver/cloudbeaver:latest
+    ports:
+      - "8080:8978"
+
+    

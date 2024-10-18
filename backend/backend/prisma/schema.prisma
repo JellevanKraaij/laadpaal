@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AccessTokens {
+  token    String    @id @unique @default(cuid())
+  isValid  Boolean   @default(false)
+  lastUsed DateTime?
+}
+
+model Cards {
+  cardSerial     String           @id @unique
+  name           String?
+  isValid        Boolean          @default(false)
+  chargeSessions ChargeSessions[]
+  totalWh        Int              @default(0)
+  balanceWh      Int              @default(0)
+  lastUsed       DateTime?
+}
+
+model ChargeSessions {
+  id         String    @id @unique @default(nanoid())
+  card       Cards     @relation(fields: [cardSerial], references: [cardSerial])
+  cardSerial String
+  createTime DateTime  @default(now())
+  startTime  DateTime?
+  startWh    Int?
+  endTime    DateTime?
+  endWh      Int?
+  logs       Logs[]
+  totalWh    Int?
+}
+
+model Logs {
+  time            DateTime        @id @unique @default(now())
+  chargeSession   ChargeSessions? @relation(fields: [chargeSessionId], references: [id])
+  chargeSessionId String?
+  wh              Int
+}
+
+model Offsets {
+  id       Int @id @unique @default(autoincrement())
+  whOffset Int
+}
+
+model Totals {
+  type TotalType @id @unique
+  wh   Int
+}
+
+enum TotalType {
+  TOTAL
+  TOTAL_CHARGED
+}
