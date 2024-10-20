@@ -5,6 +5,7 @@ import {
   UseGuards,
   ParseIntPipe,
   Query,
+  Body,
 } from '@nestjs/common';
 import { LogService } from './log.service';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -16,10 +17,10 @@ export class LogController {
   @Post()
   @UseGuards(AuthGuard)
   create(
-    @Query('wh', ParseIntPipe) wh: number,
-    @Query('chargeSession') chargeSession: string,
+    @Body('wh', ParseIntPipe) wh: number,
+    @Body('chargeSessionId') chargeSessionId?: string,
   ) {
-    return this.logService.create(wh, chargeSession);
+    return this.logService.create(wh, chargeSessionId);
   }
 
   @Get()

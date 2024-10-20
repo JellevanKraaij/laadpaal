@@ -87,13 +87,9 @@ export class ChargeSessionsService {
       throw new HttpException('Charge session already ended', 403);
     }
 
-    const totalWh = wh - chargeSession.startWh;
-
+    let totalWh = wh - chargeSession.startWh;
     if (totalWh < 0) {
-      throw new HttpException(
-        'Invalid endWh, should be greater than startWh',
-        400,
-      );
+      totalWh = 0;
     }
 
     await this.databaseService.cards.update({

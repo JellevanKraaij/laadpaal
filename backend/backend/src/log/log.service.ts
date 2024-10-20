@@ -18,9 +18,6 @@ export class LogService {
       throw new HttpException('Charge session not found', 404);
     }
 
-    if (!chargeSession.startTime) {
-      throw new HttpException('Charge session not started', 403);
-    }
     if (chargeSession.endTime) {
       throw new HttpException('Charge session already ended', 403);
     }

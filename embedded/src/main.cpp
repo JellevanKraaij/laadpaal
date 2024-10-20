@@ -1,127 +1,156 @@
 
 #include <Arduino.h>
+#include <HTTPClient.h>
 #include <Preferences.h>
 #include <WiFi.h>
-#include <HTTPClient.h>
 
+#include <backend.hpp>
+#include <card-reader.hpp>
+#include <charge-states.hpp>
+#include <charger-control.hpp>
 #include <power-meter.hpp>
+#include <wifi_connection.hpp>
 
 #define WIFI_SSID "FreshR"
 #define WIFI_PASS "Freshr4now"
+#define SERVER_URL "http://192.168.21.103:3000"
+#define SERVER_TOKEN "test"
 
 #define PULSE_POWER_PIN 17
+#define CHARGING_STATUS_PIN 27
 #define RELAY_PIN 16
 
-String allowed_cards = "";
+WiFiConnection wifiConnection(WIFI_SSID, WIFI_PASS);
+Backend backend(SERVER_URL, SERVER_TOKEN);
+Preferences preferences;
+ChargerControl chargerControl(CHARGING_STATUS_PIN, RELAY_PIN);
+CardReader cardReader;
 
-uint32_t send_millis_prev = 0;
-uint32_t connection_millis_prev = 0;
-
-void wifi_reconnect(WiFiEvent_t event) {
-    Serial.println("WiFi lost connection, reconnecting...");
-    WiFi.begin(WIFI_SSID, WIFI_PASS);
-}
-
-String uid_to_string(byte *uid, byte uidLength) {
-    String uid_string = "";
-    for (byte i = 0; i < uidLength; i++) {
-        uid_string += String(uid[i], HEX);
-    }
-    return uid_string;
-}
+static charge_state_t state = CHARGE_STATE_WAITING_FOR_CARD;
+static uint32_t waitingForChargeStartTime = 0;
+static String chargeSessionId = "";
+static uint32_t chargeStartWh = 0;
+static uint32_t chargeEndWh = 0;
+static uint32_t lastLogTime = 0;
+static uint32_t loggingInterval = 300000;  // 5 minutes
 
 void setup() {
     power_meter_init(PULSE_POWER_PIN);
-    // pinMode(PULSE_POWER_PIN, INPUT_PULLUP);
-    pinMode(PULSE_POWER_PIN, OUTPUT);
-    pinMode(GPIO_NUM_0, INPUT);
+    chargerControl.begin();
+    cardReader.begin();
+    pinMode(PULSE_POWER_PIN, OUTPUT);  // TODO: This should be INPUT_PULLUP but for testing purposes it is OUTPUT
 
-    pinMode(RELAY_PIN, OUTPUT);
+    preferences.begin("charge", false);
 
     Serial.begin(115200);
     Serial.println("PCNT initialized");
 
-    WiFi.onEvent(wifi_reconnect, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
-    WiFi.begin(WIFI_SSID, WIFI_PASS);
-
-    Serial.println("WiFi connecting...");
-}
-
-
-void send_wh() {
-    Serial.println("Sending request");
-
-    HTTPClient http;
-    http.begin("http://laadpaal.jellevankraaij.nl:6790/api");
-    http.addHeader("Content-Type", "application/json");
-    int response = http.POST("{\"wh\": " + String(power_meter_get_wh()) + "}");
-    if (response == 200) {
-        Serial.println("Success");
-        String payload = http.getString();
-        Serial.println(payload);
-        connection_millis_prev = millis();
-        allowed_cards = payload;
-    } else {
-        Serial.println("Failed");
+    Serial.println("WiFi connecting");
+    wifiConnection.connect();
+    while (!wifiConnection.isConnected()) {
+        Serial.print(".");
+        delay(1000);
     }
-    http.end();
-}
+    Serial.println(" WiFi connected!");
 
-bool send_start_charge(const String &card) {
-    bool success = false;
-    Serial.println("Sending start charge request");
+    // Restore charge session
+    chargeSessionId = preferences.getString("chargeSessionId", "");
+    chargeStartWh = preferences.getUInt("chargeStartWh", 0);
+    chargeEndWh = preferences.getUInt("chargeEndWh", 0);
 
-    HTTPClient http;
-    http.begin("http://laadpaal.jellevankraaij.nl:6790/api");
-    http.addHeader("Content-Type", "application/json");
-    String payload = "{\"state\": \"start\", \"wh\": " + String(power_meter_get_wh()) + ", \"card\": \"" + card + "\"}";
-    Serial.println(payload);
-    int response = http.POST(payload);
-    if (response == 200) {
-        Serial.println("Success");
-        String payload = http.getString();
-        Serial.println(payload);
-        connection_millis_prev = millis();
-        success = true;
-    } else {
-        Serial.println("Failed");
+    if (!chargeSessionId.isEmpty()) {
+        if (chargeStartWh != 0) {
+            state = CHARGE_STATE_STARTING_CHARGE;
+        } else {
+            if (chargeEndWh == 0)
+                chargeEndWh = power_meter_get_wh();
+            state = CHARGE_STATE_ENDING_CHARGE;
+            loggingInterval = 300000;  // 5 minutes
+        }
+        Serial.printf("Restoring charge session: %s %u %u\n", chargeSessionId.c_str(), chargeStartWh, chargeEndWh);
     }
-    http.end();
-    return success;
+
+    Serial.println("Setup done");
+    backend.sendLog(power_meter_get_wh(), chargeSessionId);
 }
 
 void loop() {
-    uint32_t millis_now;
-    digitalWrite(PULSE_POWER_PIN, !digitalRead(PULSE_POWER_PIN));
-    delay(1);
-
-    if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("WiFi not connected");
-        delay(1000);
-        return;
-    }
-
-    if (digitalRead(GPIO_NUM_0) == LOW) {
-        millis_now = millis();
-        if (millis_now - connection_millis_prev <= 60000) {
-            connection_millis_prev = millis_now;
-            if (allowed_cards.indexOf("12-34-56-78") != -1) {
-                Serial.println("Card allowed");
-                if (send_start_charge("12-34-56-78"))
-                    digitalWrite(RELAY_PIN, HIGH);
+    switch (state) {
+        case CHARGE_STATE_WAITING_FOR_CARD: {
+            if (cardReader.isCardPresent()) {
+                Serial.println("Card is detected");
+                state = CHARGE_STATE_GOT_CARD;
+                break;
             }
-            else
-                Serial.println("Card not allowed");
-        }
-
+        } break;
+        case CHARGE_STATE_GOT_CARD: {
+            String cardSerial = cardReader.getCardSerial();
+            if (cardSerial.isEmpty()) {
+                state = CHARGE_STATE_WAITING_FOR_CARD;
+                Serial.println("Unable to read card serial");
+                break;
+            }
+            chargeSessionId = backend.requestChargeSession(cardSerial);
+            if (!chargeSessionId.isEmpty()) {
+                waitingForChargeStartTime = millis();
+                state = CHARGE_STATE_WAITING_FOR_CHARGE;
+                chargerControl.enableCharging();
+                Serial.println("Enabled charging, waiting for car to start charging");
+            }
+        } break;
+        case CHARGE_STATE_WAITING_FOR_CHARGE: {
+            if (millis() - waitingForChargeStartTime > 30000) {
+                Serial.println("Timeout waiting for charge");
+                state = CHARGE_STATE_WAITING_FOR_CARD;
+                chargerControl.disableCharging();
+                break;
+            }
+            if (chargerControl.isCharging()) {
+                chargeStartWh = power_meter_get_wh();
+                preferences.putString("chargeSessionId", chargeSessionId);
+                preferences.putUInt("chargeStartWh", chargeStartWh);
+                loggingInterval = 30000;  // 30 seconds
+                state = CHARGE_STATE_STARTING_CHARGE;
+                Serial.println("Car started charging");
+                break;
+            }
+        } break;
+        case CHARGE_STATE_STARTING_CHARGE:
+            if (backend.beginChargeSession(chargeSessionId, chargeStartWh)) {
+                preferences.remove("chargeStartWh");
+                chargeStartWh = 0;
+                state = CHARGE_STATE_CHARGING;
+                Serial.println("Charge session started");
+                break;
+            }
+            break;
+        case CHARGE_STATE_CHARGING: {
+            if (!chargerControl.isCharging()) {
+                state = CHARGE_STATE_ENDING_CHARGE;
+                loggingInterval = 300000;  // 5 minutes
+                chargeEndWh = power_meter_get_wh();
+                preferences.putUInt("chargeEndWh", chargeEndWh);
+                chargerControl.disableCharging();
+                Serial.println("Car stopped charging");
+                break;
+            }
+        } break;
+        case CHARGE_STATE_ENDING_CHARGE: {
+            if (backend.endChargeSession(chargeSessionId, chargeEndWh)) {
+                preferences.remove("chargeSessionId");
+                preferences.remove("chargeEndWh");
+                chargeEndWh = 0;
+                chargeSessionId = "";
+                Serial.println("Charge session ended");
+                state = CHARGE_STATE_WAITING_FOR_CARD;
+                break;
+            }
+        } break;
     }
-
-    millis_now = millis();
-    if (millis_now - send_millis_prev >= 10000) {
-        send_millis_prev = millis_now;
-        uint32_t wh = power_meter_get_wh();
-        Serial.printf("Wh: %u\n", wh);
-        Serial.println("Sending request");
-        send_wh();
+    if (millis() - lastLogTime > loggingInterval) {
+        backend.sendLog(power_meter_get_wh(), chargeSessionId);
+        lastLogTime = millis();
     }
+    delay(20);
+    digitalWrite(PULSE_POWER_PIN, !digitalRead(PULSE_POWER_PIN));  // TODO: Remove this line, it is for testing purposes
 }

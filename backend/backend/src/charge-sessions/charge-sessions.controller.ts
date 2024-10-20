@@ -3,9 +3,9 @@ import {
   Get,
   Post,
   Param,
-  Query,
   ParseIntPipe,
   UseGuards,
+  Body,
 } from '@nestjs/common';
 import { ChargeSessionsService } from './charge-sessions.service';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -16,7 +16,7 @@ export class ChargeSessionsController {
 
   @UseGuards(AuthGuard)
   @Post('create')
-  create(@Query('cardSerial') cardSerial: string) {
+  create(@Body('cardSerial') cardSerial: string) {
     return this.chargeSessionsService.create(cardSerial);
   }
 
@@ -31,14 +31,14 @@ export class ChargeSessionsController {
   }
 
   @UseGuards(AuthGuard)
-  @Post('start/:id')
-  start(@Param('id') id: string, @Query('wh', ParseIntPipe) wh: number) {
+  @Post('begin/:id')
+  start(@Param('id') id: string, @Body('wh', ParseIntPipe) wh: number) {
     return this.chargeSessionsService.begin(id, wh);
   }
 
   @UseGuards(AuthGuard)
   @Post('end/:id')
-  end(@Param('id') id: string, @Query('wh', ParseIntPipe) wh: number) {
+  end(@Param('id') id: string, @Body('wh', ParseIntPipe) wh: number) {
     return this.chargeSessionsService.end(id, wh);
   }
 }

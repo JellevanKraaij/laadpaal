@@ -13,8 +13,6 @@ static TaskHandle_t power_meter_task_handle;
 static uint32_t kwh = 0;
 static Preferences preferences;
 
-
-
 static void pcnt_interrupt(void *arg) {
     uint32_t status;
     pcnt_get_event_status(PCNT_UNIT_0, &status);
@@ -33,9 +31,9 @@ static void power_meter_task(void *arg) {
 			if (evt == PCNT_EVT_H_LIM) {
 				xSemaphoreTake(power_meter_mutex, portMAX_DELAY);
 				kwh++;
-				// preferences.putUInt("kwh", kwh);
+				preferences.putUInt("kwh", kwh);
 				xSemaphoreGive(power_meter_mutex);
-				Serial.printf("kWh pulse kwh is now: %u\n", kwh);
+				Serial.printf("kWh counter increased to %u\n", kwh);
 			}
 		}
 	}
