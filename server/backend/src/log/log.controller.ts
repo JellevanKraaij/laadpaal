@@ -24,7 +24,7 @@ export class LogController {
   }
 
   @Get()
-  findAll(@Query('last') last: number) {
+  findAll(@Query('last') last?: number) {
     return this.logService.findAll(+last);
   }
 }
