@@ -14,13 +14,14 @@ datasource db {
 }
 
 model AccessTokens {
-  token    String    @id @unique @default(cuid())
+  token    String    @id @unique @default(nanoid())
   isValid  Boolean   @default(false)
   lastUsed DateTime?
 }
 
 model Cards {
-  cardSerial     String           @id @unique
+  id             String           @id @unique @default(nanoid())
+  cardHash       String           @unique
   name           String?
   isValid        Boolean          @default(false)
   chargeSessions ChargeSessions[]
@@ -31,13 +32,14 @@ model Cards {
 
 model ChargeSessions {
   id         String    @id @unique @default(nanoid())
-  card       Cards     @relation(fields: [cardSerial], references: [cardSerial])
-  cardSerial String
+  card       Cards     @relation(fields: [cardId], references: [id])
+  cardId   String
   createTime DateTime  @default(now())
   startTime  DateTime?
   startWh    Int?
   endTime    DateTime?
   endWh      Int?
+  totalWh    Int?
   logs       Logs[]
 }
 

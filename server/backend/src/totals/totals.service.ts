@@ -8,10 +8,13 @@ export class TotalsService {
   async findAll() {
     const chargeWh = await this.databaseService.chargeSessions
       .aggregate({
-        _sum: { startWh: true, endWh: true },
+        _sum: { totalWh: true },
       })
       .then((res) => {
-        return res._sum.endWh - res._sum.startWh;
+        if (!res._sum || !res._sum.totalWh) {
+          return 0;
+        }
+        return res._sum.totalWh;
       });
 
     const logWh = await this.databaseService.logs
@@ -23,10 +26,23 @@ export class TotalsService {
         return res[0].wh;
       });
 
+    const offsetWh = await this.databaseService.offsets
+      .findMany({
+        orderBy: { id: 'desc' },
+        take: 1,
+      })
+      .then((res) => {
+        if (!res.length) {
+          return 0;
+        }
+        return res[0].whOffset;
+      });
+
     return {
       chargeWh: chargeWh,
       totalWh: logWh,
       idleWh: logWh - chargeWh,
+      compareWh: logWh + offsetWh,
     };
   }
 }

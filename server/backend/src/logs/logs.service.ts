@@ -2,7 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
-export class LogService {
+export class LogsService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async create(wh: number, chargeSessionId: string) {

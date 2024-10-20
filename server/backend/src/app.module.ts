@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from './database/database.module';
 import { ChargeSessionsModule } from './charge-sessions/charge-sessions.module';
-import { LogModule } from './log/log.module';
+import { LogsModule } from './logs/logs.module';
 import { CardsModule } from './cards/cards.module';
 import { TotalsModule } from './totals/totals.module';
 
@@ -9,7 +9,7 @@ import { TotalsModule } from './totals/totals.module';
   imports: [
     DatabaseModule,
     ChargeSessionsModule,
-    LogModule,
+    LogsModule,
     CardsModule,
     TotalsModule,
   ],

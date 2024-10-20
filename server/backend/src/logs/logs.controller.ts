@@ -7,12 +7,12 @@ import {
   Query,
   Body,
 } from '@nestjs/common';
-import { LogService } from './log.service';
+import { LogsService } from './logs.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 
-@Controller('log')
-export class LogController {
-  constructor(private readonly logService: LogService) {}
+@Controller('logs')
+export class LogsController {
+  constructor(private readonly logsService: LogsService) {}
 
   @Post()
   @UseGuards(AuthGuard)
@@ -20,11 +20,11 @@ export class LogController {
     @Body('wh', ParseIntPipe) wh: number,
     @Body('chargeSessionId') chargeSessionId?: string,
   ) {
-    return this.logService.create(wh, chargeSessionId);
+    return this.logsService.create(wh, chargeSessionId);
   }
 
   @Get()
   findAll(@Query('last') last?: number) {
-    return this.logService.findAll(+last);
+    return this.logsService.findAll(+last);
   }
 }

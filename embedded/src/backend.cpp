@@ -13,7 +13,7 @@ bool Backend::sendLog(uint32_t wh, const String &sessionId) {
 
     Serial.printf("Sending log: %u %s\n", wh, sessionId.c_str());
 
-    _http.begin(_url + "/log");
+    _http.begin(_url + "/logs");
     _http.addHeader("authentication", _token);
     _http.addHeader("Content-Type", "application/json");
 
