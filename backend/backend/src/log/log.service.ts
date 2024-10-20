@@ -1,5 +1,4 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { TotalType } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
@@ -7,12 +6,6 @@ export class LogService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async create(wh: number, chargeSessionId: string) {
-    await this.databaseService.totals.upsert({
-      where: { type: TotalType.TOTAL },
-      update: { wh: wh },
-      create: { type: TotalType.TOTAL, wh: wh },
-    });
-
     if (!chargeSessionId) {
       return this.databaseService.logs.create({
         data: { wh: wh },

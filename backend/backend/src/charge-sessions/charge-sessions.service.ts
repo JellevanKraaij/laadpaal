@@ -1,17 +1,18 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import { TotalType } from '@prisma/client';
 
 @Injectable()
 export class ChargeSessionsService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async findAll() {
-    return await this.databaseService.chargeSessions.findMany();
+    return await this.databaseService.withExtensions().chargeSessions.findMany({
+      orderBy: { startTime: 'desc' },
+    });
   }
 
   async findOne(id: string) {
-    return this.databaseService.chargeSessions.findUnique({
+    return this.databaseService.withExtensions().chargeSessions.findUnique({
       where: { id: id },
       include: {
         logs: {
@@ -41,16 +42,20 @@ export class ChargeSessionsService {
       data: { lastUsed: new Date() },
     });
 
-    const chargeSession = await this.databaseService.chargeSessions.create({
-      data: { cardSerial: cardSerial },
-    });
+    const chargeSession = await this.databaseService
+      .withExtensions()
+      .chargeSessions.create({
+        data: { cardSerial: cardSerial },
+      });
     return chargeSession.id;
   }
 
   async begin(id: string, wh: number) {
-    const chargeSession = await this.databaseService.chargeSessions.findUnique({
-      where: { id: id },
-    });
+    const chargeSession = await this.databaseService
+      .withExtensions()
+      .chargeSessions.findUnique({
+        where: { id: id },
+      });
 
     if (!chargeSession) {
       throw new HttpException('Charge session not found', 404);
@@ -66,9 +71,11 @@ export class ChargeSessionsService {
   }
 
   async end(id: string, wh: number) {
-    const chargeSession = await this.databaseService.chargeSessions.findUnique({
-      where: { id: id },
-    });
+    const chargeSession = await this.databaseService
+      .withExtensions()
+      .chargeSessions.findUnique({
+        where: { id: id },
+      });
 
     if (!chargeSession) {
       throw new HttpException('Charge session not found', 404);
@@ -92,15 +99,9 @@ export class ChargeSessionsService {
     await this.databaseService.cards.update({
       where: { cardSerial: chargeSession.cardSerial },
       data: {
-        balanceWh: { decrement: totalWh },
         totalWh: { increment: totalWh },
+        balanceWh: { decrement: totalWh },
       },
-    });
-
-    await this.databaseService.totals.upsert({
-      where: { type: TotalType.TOTAL_CHARGED },
-      update: { wh: { increment: totalWh } },
-      create: { type: TotalType.TOTAL_CHARGED, wh: totalWh },
     });
 
     return this.databaseService.chargeSessions.update({
@@ -108,7 +109,6 @@ export class ChargeSessionsService {
       data: {
         endTime: new Date(),
         endWh: wh,
-        totalWh: totalWh,
       },
     });
   }

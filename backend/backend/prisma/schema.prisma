@@ -39,7 +39,6 @@ model ChargeSessions {
   endTime    DateTime?
   endWh      Int?
   logs       Logs[]
-  totalWh    Int?
 }
 
 model Logs {
@@ -52,14 +51,4 @@ model Logs {
 model Offsets {
   id       Int @id @unique @default(autoincrement())
   whOffset Int
-}
-
-model Totals {
-  type TotalType @id @unique
-  wh   Int
-}
-
-enum TotalType {
-  TOTAL
-  TOTAL_CHARGED
 }

@@ -5,11 +5,11 @@ import { DatabaseService } from 'src/database/database.service';
 export class CardsService {
   constructor(private readonly databaseService: DatabaseService) {}
   async findAll() {
-    return this.databaseService.cards.findMany();
+    return this.databaseService.withExtensions().cards.findMany();
   }
 
   async findOne(cardSerial: string) {
-    return this.databaseService.cards.findUnique({
+    return this.databaseService.withExtensions().cards.findUnique({
       where: { cardSerial: cardSerial },
       include: {
         chargeSessions: {
