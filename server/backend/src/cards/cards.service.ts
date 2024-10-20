@@ -9,21 +9,39 @@ export class CardsService {
   }
 
   async findOne(id: string) {
-    return this.databaseService.cards.findUnique({
+    const card = await this.databaseService.cards.findUnique({
       where: { id: id },
       include: {
         chargeSessions: {
           orderBy: { startTime: 'desc' },
         },
+        payments: {
+          orderBy: { createTime: 'desc' },
+        },
       },
     });
-  }
+    if (!card) {
+      throw new HttpException('Card not found', 404);
+    }
 
-  async updateBalance(cardHash: string, value: number) {
-    return this.databaseService.cards.update({
-      where: { cardHash: cardHash },
-      data: { balanceWh: value },
-    });
+    const whPaid = await this.databaseService.payments
+      .aggregate({
+        _sum: { whPaid: true },
+        where: { cardId: card.id },
+      })
+      .then((res) => {
+        if (!res._sum || !res._sum.whPaid) {
+          return 0;
+        }
+        return res._sum.whPaid;
+      });
+
+    const cardExtended = {
+      ...card,
+      balance: whPaid - card.totalWh,
+    };
+
+    return cardExtended;
   }
 
   async updateName(cardHash: string, name: string) {

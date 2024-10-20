@@ -26,14 +26,14 @@ model Cards {
   isValid        Boolean          @default(false)
   chargeSessions ChargeSessions[]
   totalWh        Int              @default(0)
-  balanceWh      Int              @default(0)
   lastUsed       DateTime?
+  payments       Payments[]
 }
 
 model ChargeSessions {
   id         String    @id @unique @default(nanoid())
   card       Cards     @relation(fields: [cardId], references: [id])
-  cardId   String
+  cardId     String
   createTime DateTime  @default(now())
   startTime  DateTime?
   startWh    Int?
@@ -53,4 +53,13 @@ model Logs {
 model Offsets {
   id       Int @id @unique @default(autoincrement())
   whOffset Int
+}
+
+model Payments {
+  id          String   @id @unique @default(nanoid())
+  card        Cards    @relation(fields: [cardId], references: [id])
+  cardId      String
+  createTime  DateTime @default(now())
+  whPaid      Int
+  description String?
 }

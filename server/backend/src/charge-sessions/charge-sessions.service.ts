@@ -95,10 +95,9 @@ export class ChargeSessionsService {
     }
 
     await this.databaseService.cards.update({
-      where: { id: chargeSession.id },
+      where: { id: chargeSession.cardId },
       data: {
         totalWh: { increment: totalWh },
-        balanceWh: { decrement: totalWh },
       },
     });
 
