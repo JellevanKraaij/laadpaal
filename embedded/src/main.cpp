@@ -13,18 +13,19 @@
 
 #define WIFI_SSID "FreshR"
 #define WIFI_PASS "Freshr4now"
-#define SERVER_URL "http://192.168.21.103:3000"
+#define SERVER_URL "http://192.168.0.127:3000"
 #define SERVER_TOKEN "test"
 
 #define PULSE_POWER_PIN 17
 #define CHARGING_STATUS_PIN 27
 #define RELAY_PIN 16
+#define CARD_READER_SS_PIN 22
 
 WiFiConnection wifiConnection(WIFI_SSID, WIFI_PASS);
 Backend backend(SERVER_URL, SERVER_TOKEN);
 Preferences preferences;
 ChargerControl chargerControl(CHARGING_STATUS_PIN, RELAY_PIN);
-CardReader cardReader;
+CardReader cardReader(CARD_READER_SS_PIN);
 
 static charge_state_t state = CHARGE_STATE_WAITING_FOR_CARD;
 static uint32_t waitingForChargeStartTime = 0;
@@ -36,14 +37,13 @@ static uint32_t loggingInterval = 300000;  // 5 minutes
 
 void setup() {
     power_meter_init(PULSE_POWER_PIN);
-    chargerControl.begin();
-    cardReader.begin();
-    pinMode(PULSE_POWER_PIN, OUTPUT);  // TODO: This should be INPUT_PULLUP but for testing purposes it is OUTPUT
-
-    preferences.begin("charge", false);
-
     Serial.begin(115200);
     Serial.println("PCNT initialized");
+
+    cardReader.begin();
+    chargerControl.begin();
+    pinMode(PULSE_POWER_PIN, OUTPUT);  // TODO: This should be INPUT_PULLUP but for testing purposes it is OUTPUT
+    preferences.begin("charge", false);
 
     Serial.println("WiFi connecting");
     wifiConnection.connect();

@@ -1,21 +1,40 @@
 #include "card-reader.hpp"
 
-CardReader::CardReader() {}
+#include <Arduino.h>
+#include <Adafruit_PN532.h>
+
+CardReader::CardReader(uint32_t ss) : nfc(18, 19, &Wire) {
+
+}
 
 void CardReader::begin() {
-	// Initialize card reader
-	pinMode(25, INPUT_PULLUP);
+	nfc.begin();
+	uint32_t versiondata = nfc.getFirmwareVersion();
+	if (!versiondata) {
+		Serial.println("Didn't find PN53x board");
+		return;
+	}
+	Serial.println("Found chip PN5");
 }
 
 bool CardReader::isCardPresent() {
-	// Check if card is present
-	return digitalRead(25) == LOW;
+	uint8_t uid[] = {0, 0, 0, 0, 0, 0, 0};
+	uint8_t uidLength = 0;
+	
+	bool ret = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 100);
+	return ret && uidLength > 0;
 }
 
 String CardReader::getCardSerial() {
-	// Get card serial
-	if (!isCardPresent()) {
+	uint8_t uid[] = {0, 0, 0, 0, 0, 0, 0};
+	uint8_t uidLength = 0;
+	if (!nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 100)) {
+		Serial.println("Failed to read card serial");
 		return "";
 	}
-	return "test-card";
+	String cardSerial = "";
+	for (uint8_t i = 0; i < uidLength; i++) {
+		cardSerial += String(uid[i], HEX);
+	}
+	return cardSerial;
 }

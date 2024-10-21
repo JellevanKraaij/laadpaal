@@ -58,7 +58,7 @@ void power_meter_init(int pin) {
 
     ESP_ERROR_CHECK(pcnt_unit_config(&pcnt_config));
     
-	//TODO: Add PCNT filter
+	ESP_ERROR_CHECK(pcnt_set_filter_value(PCNT_UNIT_0, 800));
 
     ESP_ERROR_CHECK(pcnt_event_enable(PCNT_UNIT_0, PCNT_EVT_H_LIM));
 

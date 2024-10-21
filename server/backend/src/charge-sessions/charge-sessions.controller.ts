@@ -14,12 +14,6 @@ import { AuthGuard } from 'src/auth/auth.guard';
 export class ChargeSessionsController {
   constructor(private readonly chargeSessionsService: ChargeSessionsService) {}
 
-  @UseGuards(AuthGuard)
-  @Post('create')
-  create(@Body('cardSerial') cardSerial: string) {
-    return this.chargeSessionsService.create(cardSerial);
-  }
-
   @Get()
   findAll() {
     return this.chargeSessionsService.findAll();
@@ -28,6 +22,12 @@ export class ChargeSessionsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.chargeSessionsService.findOne(id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('create')
+  create(@Body('cardSerial') cardSerial: string) {
+    return this.chargeSessionsService.create(cardSerial);
   }
 
   @UseGuards(AuthGuard)
