@@ -29,7 +29,6 @@ String CardReader::getCardSerial() {
 	uint8_t uid[] = {0, 0, 0, 0, 0, 0, 0};
 	uint8_t uidLength = 0;
 	if (!nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 100)) {
-		Serial.println("Failed to read card serial");
 		return "";
 	}
 	String cardSerial = "";

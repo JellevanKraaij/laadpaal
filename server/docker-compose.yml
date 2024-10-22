@@ -1,20 +1,27 @@
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: prod
+#     target: dev
+
     ports:
       - "3000:3000"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules/
-    restart: on-failure
-  frontend:
-    build: ./frontend
-    ports:
-      - "3001:3001"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules/
-    restart: on-failure
+    # volumes:
+      # - ./backend:/app
+      # - /app/node_modules/
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
+    restart: unless-stopped
+  # frontend:
+  #   build: ./frontend
+  #   ports:
+  #     - "3001:3001"
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules/
+  #   restart: unless-stopped
 
   db:
     image: postgres:16-alpine
@@ -22,10 +29,16 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-    restart: on-failure
+    volumes:
+      - ./volumes/db:/var/lib/postgresql/data   
+    restart: unless-stopped
+
   dbeaver:
     image: dbeaver/cloudbeaver:latest
     ports:
-      - "8080:8978"
+      - "127.0.0.1:8978:8978"
+    volumes:
+      - ./volumes/dbeaver:opt/cloudbeaver/workspace
+    restart: unless-stopped
 
     
