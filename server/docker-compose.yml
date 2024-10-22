@@ -4,7 +4,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       target: prod
-
+    networks:
+      - internal
     ports:
       - "3000:3000"
     environment:
@@ -25,14 +26,21 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    networks:
+      - internal
     volumes:
       - ./volumes/db:/var/lib/postgresql/data   
     restart: unless-stopped
 
   dbeaver:
     image: dbeaver/cloudbeaver:latest
+    networks:
+      - internal
     ports:
       - "127.0.0.1:8978:8978"
     volumes:
       - ./volumes/dbeaver:/opt/cloudbeaver/workspace
     restart: unless-stopped
+
+networks:
+  internal:
