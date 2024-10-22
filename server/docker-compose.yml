@@ -4,13 +4,9 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       target: prod
-#     target: dev
 
     ports:
       - "3000:3000"
-    # volumes:
-      # - ./backend:/app
-      # - /app/node_modules/
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
     restart: unless-stopped
