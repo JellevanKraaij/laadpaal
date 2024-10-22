@@ -2,8 +2,14 @@
 
 #include <ArduinoJson.h>
 
-Backend::Backend(const String &url, const String &token) : _url(url), _token(token) {
-    _rateLimitLastRequestTime = millis() - _rateLimitInterval;
+Backend::Backend(const String &url, const String &token, const char *root_ca) : _url(url), _token(token), _root_ca(root_ca) {
+    _rateLimitLastRequestTime = 0 - _rateLimitInterval;
+}
+
+void Backend::begin() {
+    if (_root_ca != nullptr) {
+        _client.setCACert(_root_ca);
+    }
 }
 
 bool Backend::sendLog(uint32_t wh, const String &sessionId) {
@@ -13,7 +19,7 @@ bool Backend::sendLog(uint32_t wh, const String &sessionId) {
 
     Serial.printf("Sending log: %u %s\n", wh, sessionId.c_str());
 
-    _http.begin(_url + "/logs");
+    _http.begin(_client, _url + "/logs");
     _http.addHeader("authentication", _token);
     _http.addHeader("Content-Type", "application/json");
 
@@ -45,7 +51,7 @@ String Backend::requestChargeSession(const String &cardSerial) {
 
     Serial.printf("Requesting charge session: %s\n", cardSerial.c_str());
 
-    _http.begin(_url + "/charge-sessions/create");
+    _http.begin(_client, _url + "/charge-sessions/create");
     _http.addHeader("authentication", _token);
     _http.addHeader("Content-Type", "application/json");
 
@@ -75,7 +81,7 @@ bool Backend::beginChargeSession(const String &sessionId, uint32_t wh) {
 
     Serial.printf("Begin charge session: %s %u\n", sessionId.c_str(), wh);
 
-    _http.begin(_url + String("/charge-sessions/begin/") + sessionId);
+    _http.begin(_client, _url + String("/charge-sessions/begin/") + sessionId);
     _http.addHeader("authentication", _token);
     _http.addHeader("Content-Type", "application/json");
 
@@ -104,7 +110,7 @@ bool Backend::endChargeSession(const String &sessionId, uint32_t wh) {
 
     Serial.printf("Ending charge session: %s %u\n", sessionId.c_str(), wh);
 
-    _http.begin(_url + String("/charge-sessions/end/") + sessionId);
+    _http.begin(_client, _url + String("/charge-sessions/end/") + sessionId);
     _http.addHeader("authentication", _token);
     _http.addHeader("Content-Type", "application/json");
 
