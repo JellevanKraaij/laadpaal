@@ -28,6 +28,7 @@ model Cards {
   totalWh        Int              @default(0)
   lastUsed       DateTime?
   payments       Payments[]
+  imageUrl       String?
 }
 
 model ChargeSessions {
