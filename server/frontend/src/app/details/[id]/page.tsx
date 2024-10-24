@@ -1,60 +1,19 @@
 'use client'
 import { usePathname } from 'next/navigation'
+import { cardDetailsType } from '@/app/types';
+import makeDetailCard from '@/app/UImodules/detailCard';
+import { Grid, Box } from "@mui/material";
 
-type Charge =
-{
-    "id":   string,
-    "card": string,
-    "cardId":     string,
-    "createTime": string,
-    "startTime":  string,
-    "startWh":   number
-    "endTime":    string,
-    "endWh":      number
-    "totalWh":    number
-}
-
-type cardType =
-{
-  "id": string,
-  "cardHash": string,
-  "name": string,
-  "isValid": boolean,
-  "totalWh": number,
-  "lastUsed": string
-};
-
-export default async function cardpage() {
-
-    // const cardID = useParams();
+export default async function detailPage() {
     const pathname = usePathname();
     const urlPart = pathname.split('/')[2];
-
-    console.log(urlPart);
-
-    // const cards: cardType[] = await (await fetch("https://laadpaal.jellevankraaij.nl/api/cards")).json();
-    const charge: Charge = await (await fetch(`https://laadpaal.jellevankraaij.nl/api/cards/${urlPart}`)).json();
+    const detailCard: cardDetailsType = await (await fetch(`https://laadpaal.jellevankraaij.nl/api/cards/${urlPart}`)).json();
+    
     return (
-    <>
-        <p>
-        card: {charge.card}
-        </p>
-        <p>
-        start time: {charge.startTime}
-        </p>
-        <p>
-        end time: {charge.endTime}
-        </p>
-        <p>
-        startWh: {charge.startWh}
-        </p>
-        <p>
-        endWh: {charge.endWh}
-        </p>
-        <p>
-        totalWh: {charge.totalWh}
-        </p>
-    </>
-   
+      <Box display="flex" alignItems="center" style={{ marginTop: '50px' }}>
+        <Grid container spacing={0} justifyContent="center" >
+        {makeDetailCard(detailCard)}
+        </Grid>
+      </Box>
     );
-  }
+}
