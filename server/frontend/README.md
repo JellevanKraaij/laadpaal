@@ -11,3 +11,13 @@ useEffect(()=>{function}, [dep]) run when dep value changes
 
 useState
 is used to interact with React's 'reactive rendering model'
+to correctly trigger on changes in 'state'. for example
+var might be null until after fetch() completes. the
+page can start without breaking, then complete the page dynamically
+
+const [cards, fillCard] = useState<cardType[] | null>(null);
+
+useEffect(()=>
+{
+  fetch(url).then((data)=>data.json().then((data)=>fillCard(data)));
+}, [url])

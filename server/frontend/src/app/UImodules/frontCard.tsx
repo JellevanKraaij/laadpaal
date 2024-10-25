@@ -4,9 +4,10 @@ import Link from "next/link";
 
 function readableDate(date: string)
 {
+  if (date === null)
+    return ("N/A");
   const ymd = date.split('T')[0];
   const time = date.split('T')[1].substring(0,5);
-  // return (ymd + ' ' + time);
   return ([time, ymd]);
 }
 

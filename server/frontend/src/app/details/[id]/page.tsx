@@ -1,48 +1,27 @@
-'use client'
+import { detailsType } from '@/app/types';
+import { makeChargeTable, makePaymentsTable } from '@/app/UImodules/detailTable';
+import { Grid, Box, Paper } from "@mui/material";
 
-import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation'
-import { cardDetailsType } from '@/app/types';
-import makeDetailCard from '@/app/UImodules/detailCard';
-import { Grid, Box } from "@mui/material";
+export default async function detailPage({params}: {params: {id: string}}) {
 
-// async function getData(url: string): cardDetailsType | null
-// {
-//   return (await (await fetch(url)).json());
-// }
-
-export default function detailPage() {
-    const urlPart = usePathname().split('/')[2];
-    const url = `https://laadpaal.jellevankraaij.nl/api/cards/${urlPart}`;
-    // const detailCard: cardDetailsType = await (await fetch(`https://laadpaal.jellevankraaij.nl/api/cards/${urlPart}`)).json();
-  
-
-    const [detailCard, fillCard] = useState<cardDetailsType | null>(null);
-
-    // useEffect to respond to navigation
-    useEffect(() => {
-
-      fetch(url).then((data) => data.json().then((data) => fillCard(data)));
-      // fillCard(await (await fetch(url)).json());
-
-      // (await fetch(url)).json()).then((data) => fillCard(data))
-      // (await (await fetch(url)).json()).then((data) => fillCard(data))
-
-      // async function requestFill()// = async () =>
-      // {
-      //   fillCard(await (await fetch(url)).json());
-      // };
-      // requestFill();   
-    }, [url]);
-
-    if (!detailCard)
-      return <div>Loading...</div>;
+    const url = `https://laadpaal.jellevankraaij.nl/api/cards/${params.id}`;
+    const detailCard: detailsType = await (await fetch(url)).json();
 
     return (
-      <Box display="flex" alignItems="center" style={{ marginTop: '50px' }}>
-        <Grid container spacing={0} justifyContent="center" >
-        {makeDetailCard(detailCard)}
-        </Grid>
+      <div>
+      <Box alignItems="center" justifyContent="center" component={Paper} style={{ padding: '10px 20px', marginTop: '50px', width: 'fit-content' }}>
+      <b>{detailCard.name} charge sessions</b>
       </Box>
-    );
+      <Box display="flex" alignItems="center" style={{ marginTop: '10px' }}>
+      {makeChargeTable(detailCard.chargeSessions)}
+      </Box>
+      <br/>
+      <Box alignItems="center" justifyContent="center" component={Paper} style={{ padding: '10px 20px', marginTop: '50px', width: 'fit-content' }}>
+      <b>credit left: {detailCard.balance}</b>
+      </Box>
+      <Box display="flex" alignItems="center" style={{ marginTop: '10px' }}>
+      {makePaymentsTable(detailCard.payments)}
+      </Box>
+      </div>
+    )
 }
