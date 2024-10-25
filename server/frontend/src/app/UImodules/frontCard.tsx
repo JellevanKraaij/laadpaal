@@ -29,7 +29,7 @@ export default function makeCardFront(card: cardType): JSX.Element
       </CardContent>
       <CardActions>
         <Button style={{ backgroundColor: 'green', color: 'white' }} variant="contained" size="small">
-          <Link href={`http://localhost:3001/details/${card.id}`}><b>Details</b></Link>
+          <Link href={`http://localhost:8002/details/${card.id}`}><b>Details</b></Link>
         </Button>
       </CardActions>
     </Card>

@@ -15,7 +15,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "3001:3001"
+      - "8002:8002"
     volumes:
       - ./frontend:/app
       - /app/node_modules/
