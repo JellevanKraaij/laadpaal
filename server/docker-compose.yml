@@ -1,46 +1,47 @@
 services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-      target: prod
-    networks:
-      - internal
+#   backend:
+#     build:
+#       context: ./backend
+#       dockerfile: Dockerfile
+#       target: prod
+#     networks:
+#       - internal
+#     ports:
+#       - "3000:3000"
+#     environment:
+#       - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
+#     restart: unless-stopped
+
+  frontend:
+    build: ./frontend
     ports:
-      - "3000:3000"
-    environment:
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
-    restart: unless-stopped
-  # frontend:
-  #   build: ./frontend
-  #   ports:
-  #     - "3001:3001"
-  #   volumes:
-  #     - ./frontend:/app
-  #     - /app/node_modules/
-  #   restart: unless-stopped
-
-  db:
-    image: postgres:16-alpine
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    networks:
-      - internal
+      - "3001:3001"
     volumes:
-      - ./volumes/db:/var/lib/postgresql/data   
+      - ./frontend:/app
+      - /app/node_modules/
     restart: unless-stopped
 
-  dbeaver:
-    image: dbeaver/cloudbeaver:latest
-    networks:
-      - internal
-    ports:
-      - "127.0.0.1:8978:8978"
-    volumes:
-      - ./volumes/dbeaver:/opt/cloudbeaver/workspace
-    restart: unless-stopped
+#   db:
+#     image: postgres:16-alpine
+#     environment:
+#       - POSTGRES_DB=postgres
+#       - POSTGRES_USER=postgres
+#       - POSTGRES_PASSWORD=postgres
+#     networks:
+#       - internal
+#     volumes:
+#       - ./volumes/db:/var/lib/postgresql/data   
+#     restart: unless-stopped
 
-networks:
-  internal:
+#   dbeaver:
+#     image: dbeaver/cloudbeaver:latest
+#     networks:
+#       - internal
+#     ports:
+#       - "127.0.0.1:8978:8978"
+#     volumes:
+#       - ./volumes/dbeaver:/opt/cloudbeaver/workspace
+#     restart: unless-stopped
+
+# networks:
+#   internal:

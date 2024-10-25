@@ -10,11 +10,17 @@
 #include <charger-control.hpp>
 #include <power-meter.hpp>
 #include <wifi_connection.hpp>
+#include <secrets.hpp>
 
 #define WIFI_SSID "FreshR"
 #define WIFI_PASS "Freshr4now"
-#define SERVER_URL "http://192.168.0.127:3000"
+#define SERVER_URL "https://laadpaal.jellevankraaij.nl/api"
+
+#ifndef TOKEN
 #define SERVER_TOKEN "test"
+#else
+#define SERVER_TOKEN TOKEN
+#endif
 
 static const char *root_ca = \
 "-----BEGIN CERTIFICATE-----\n" \
