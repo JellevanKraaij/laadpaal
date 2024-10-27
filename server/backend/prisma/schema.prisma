@@ -26,6 +26,7 @@ model Cards {
   isValid        Boolean          @default(false)
   chargeSessions ChargeSessions[]
   totalWh        Int              @default(0)
+  kWhPrice       Decimal          @db.Decimal(2,2)     @default(0)
   lastUsed       DateTime?
   payments       Payments[]
   imageUrl       String?
