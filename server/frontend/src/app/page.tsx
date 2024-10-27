@@ -3,8 +3,8 @@ import TotalCard from "@/components/totalCard";
 import { Divider, Grid2 } from "@mui/material";
 import Typography from "@mui/material/Typography";
 
-// Cache the page for 10 seconds, and revalidate every 10  seconds if the page is requested
-export const revalidate = 10;
+// Cache the page for 60 seconds, and revalidate every 60 seconds if the page is requested
+export const revalidate = 60;
 
 export default async function Home() {
   const cardData = await fetch("https://api.laadpaal.jellevankraaij.nl/cards");

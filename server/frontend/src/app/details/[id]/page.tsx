@@ -7,6 +7,9 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ChargeSessionTable from "@/components/chargeSessionTable";
 import PaymentsTable from "@/components/paymentsTable";
 
+// Cache the page for 60 seconds, and revalidate every 60 seconds if the page is requested
+export const revalidate = 60;
+
 export default async function Details({ params }: { params: { id: string } }) {
   const data = await fetch(
     "https://api.laadpaal.jellevankraaij.nl/cards/" + params.id
