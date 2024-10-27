@@ -20,7 +20,6 @@ COPY --chown=node:node . .
 
 RUN npx prisma generate
 
-
 # Start the development server
 CMD ["npm", "run", "start:dev"]
 
