@@ -3,7 +3,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import { ThemeProvider } from "@mui/material";
-import darkTheme from "./dark.theme";
+import lightTheme from "./light.theme";
 import { CssBaseline } from "@mui/material";
 import { Container } from "@mui/material";
 
@@ -23,9 +23,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AppRouterCacheProvider>
-          <ThemeProvider theme={darkTheme}>
+          <ThemeProvider theme={lightTheme}>
             <CssBaseline />
-            <Container>{children}</Container>
+            <Container sx={{m: 2}} >{children}</Container>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>
