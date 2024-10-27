@@ -1,4 +1,5 @@
-import CardOverview from "@/components/cardOverview";
+import CardCard from "@/components/cardCard";
+import TotalCard from "@/components/totalCard";
 import { Divider, Grid2 } from "@mui/material";
 import Typography from "@mui/material/Typography";
 
@@ -6,7 +7,7 @@ import Typography from "@mui/material/Typography";
 export const revalidate = 10;
 
 export default async function Home() {
-  const data = await fetch("https://laadpaal.jellevankraaij.nl/api/cards");
+  const cardData = await fetch("https://laadpaal.jellevankraaij.nl/api/cards");
   const cards: {
     id: string;
     name: string;
@@ -15,21 +16,31 @@ export default async function Home() {
     totalWh: number;
     balance: number;
     kWhPrice: number;
-  }[] = await data.json();
+  }[] = await cardData.json();
+
+  const totalData = await fetch("https://laadpaal.jellevankraaij.nl/api/totals");
+  const total: {
+    chargeWh: number;
+    totalWh: number;
+    idleWh: number;
+    compareWh: number;
+  } = await totalData.json();
+
   return (
     <>
       <Typography variant="h3"><strong>Overview</strong></Typography>
       <Divider flexItem />
       <br />
-      <Grid2 container spacing={3} sx={{ m: 0 }} >
+      <Grid2 container spacing={3} sx={{ m: 0, mb: 5 }} >
         {cards.map((card) => (
-          <CardOverview
+          <CardCard
             key={card.id}
             card={card}
-            detailsLink={`/card/${card.id}`}
+            detailsLink={`/details/${card.id}`}
           />
         ))}
       </Grid2>
+      <TotalCard key="totals" totals={total} />
     </>
   );
 }

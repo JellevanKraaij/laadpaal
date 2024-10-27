@@ -8,11 +8,11 @@ import { useFormatter } from "next-intl";
 import TocIcon from "@mui/icons-material/Toc";
 
 
-export default function CardOverview(props: {card: {name: string, isValid: boolean, lastUsed: Date, totalWh: number, balance: number, kWhPrice: number}, detailsLink: string}) {
+export default function CardCard(props: {card: {name: string, isValid: boolean, lastUsed: Date, totalWh: number, balance: number, kWhPrice: number}, detailsLink: string}) {
   const format = useFormatter();
   return (
     <>
-      <Card sx={{ boxShadow: 4, minWidth: 200, maxWidth: 350 }}>
+      <Card sx={{ boxShadow: 4, width: 300 }}>
         <CardContent>
           <Typography variant="h5">{props.card.name}</Typography>
           <Typography sx={{ color: "text.secondary", mb: 2 }}>

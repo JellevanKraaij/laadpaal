@@ -9,4 +9,16 @@ export default getRequestConfig(async () => ({
  
   // (requires an explicit preference)
   locale: 'en',
+
+  formats: {
+    dateTime: {
+      shortDateTime: {
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+      },
+    },
+  },
 }));
