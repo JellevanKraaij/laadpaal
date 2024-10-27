@@ -13,7 +13,7 @@
 
 #define WIFI_SSID "FreshR"
 #define WIFI_PASS "Freshr4now"
-#define SERVER_URL "http://192.168.0.127:3000"
+#define SERVER_URL "https://api.laadpaal.jellevankraaij.nl"
 #define SERVER_TOKEN "test"
 
 static const char *root_ca = \
