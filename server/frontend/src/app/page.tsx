@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
 export const revalidate = 10;
 
 export default async function Home() {
-  const cardData = await fetch("https://laadpaal.jellevankraaij.nl/api/cards");
+  const cardData = await fetch("https://api.laadpaal.jellevankraaij.nl/cards");
   const cards: {
     id: string;
     name: string;
@@ -18,7 +18,7 @@ export default async function Home() {
     kWhPrice: number;
   }[] = await cardData.json();
 
-  const totalData = await fetch("https://laadpaal.jellevankraaij.nl/api/totals");
+  const totalData = await fetch("https://api.laadpaal.jellevankraaij.nl/totals");
   const total: {
     chargeWh: number;
     totalWh: number;

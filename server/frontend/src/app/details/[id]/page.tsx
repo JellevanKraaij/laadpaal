@@ -9,7 +9,7 @@ import PaymentsTable from "@/components/paymentsTable";
 
 export default async function Details({ params }: { params: { id: string } }) {
   const data = await fetch(
-    "https://laadpaal.jellevankraaij.nl/api/cards/" + params.id
+    "https://api.laadpaal.jellevankraaij.nl/cards/" + params.id
   );
   const card = await data.json();
 
