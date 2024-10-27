@@ -47,14 +47,14 @@ export default function ChargeSessionTable(props: {
         Charge Sessions:
       </Typography>
       <Typography sx={{ color: "text.secondary" }}>
-        Price:{" "}
+        Pricde:{" "}
         {format.number(props.kWhPrice, { style: "currency", currency: "EUR" })}
         /kWh
         <br />
         Total: {totalWh.toFixed(2)} kWh, {format.number(totalCost, { style: "currency", currency: "EUR" })}, ({chargeSessions.length} sessions)
       </Typography>
 
-      <Paper sx={{ mt: 1 }}>
+      <Paper sx={{ mt: 1, minWidth: 900}}>
         <DataGrid
           rows={chargeSessions}
           columns={columns}

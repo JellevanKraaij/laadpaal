@@ -20,8 +20,8 @@ export default function PaymentsTable(props: {
     props.payments.reduce((acc, payment) => acc + payment.whPaid, 0) / 1000;
 
   const columns = [
-    { field: "createTime", headerName: "Created at", flex: 2 },
-    { field: "whPaid", headerName: "Wh paid", flex: 1 },
+    { field: "createTime", headerName: "Created at", flex: 3 },
+    { field: "whPaid", headerName: "Wh paid", flex: 2 },
     { field: "description", headerName: "Description", flex: 8 },
   ];
 
@@ -32,7 +32,7 @@ export default function PaymentsTable(props: {
         Total payed: {totalWh.toFixed(2)} kWh,{" "} ({payments.length} payments)
       </Typography>
 
-      <Paper sx={{ mt: 1 }}>
+      <Paper sx={{ mt: 1, minWidth: 900 }}>
         <DataGrid
           rows={payments}
           columns={columns}
