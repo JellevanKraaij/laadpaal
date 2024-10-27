@@ -5,7 +5,29 @@ import { DatabaseService } from 'src/database/database.service';
 export class CardsService {
   constructor(private readonly databaseService: DatabaseService) {}
   async findAll() {
-    return this.databaseService.cards.findMany();
+    const cards = await this.databaseService.cards.findMany();
+
+    const cardsExtended = await Promise.all(
+      cards.map(async (card) => {
+        const whPaid = await this.databaseService.payments
+          .aggregate({
+            _sum: { whPaid: true },
+            where: { cardId: card.id },
+          })
+          .then((res) => {
+            if (!res._sum || !res._sum.whPaid) {
+              return 0;
+            }
+            return res._sum.whPaid;
+          });
+
+        return {
+          ...card,
+          balance: whPaid - card.totalWh,
+        };
+      }),
+    );
+    return cardsExtended;
   }
 
   async findOne(id: string) {
