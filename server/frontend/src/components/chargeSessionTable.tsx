@@ -47,7 +47,7 @@ export default function ChargeSessionTable(props: {
         Charge Sessions:
       </Typography>
       <Typography sx={{ color: "text.secondary" }}>
-        Pricde:{" "}
+        Price:{" "}
         {format.number(props.kWhPrice, { style: "currency", currency: "EUR" })}
         /kWh
         <br />
